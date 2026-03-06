@@ -4,19 +4,21 @@ import {
   ScrollView, Image, KeyboardAvoidingView, Platform 
 } from 'react-native';
 import { RouteProp, useRoute, useNavigation } from '@react-navigation/native';
-import { RootStackParamList } from '../types';
-import { useApp } from '../context/AppContext';
+import { RootStackParamList } from '../../types';
+import { useApp } from '../../context/AppContext';
 import { MaterialIcons } from '@expo/vector-icons';
+import { styles } from './ApplicationFormScreen.styles';
 
 type ApplicationRouteProp = RouteProp<RootStackParamList, 'ApplicationForm'>;
+
+const MAX_REASON_LENGTH = 500;
 
 export const ApplicationFormScreen = () => {
   const route = useRoute<ApplicationRouteProp>();
   const navigation = useNavigation<any>();
   const { job } = route.params;
-  const { colors } = useApp();
-
-  // Create a reference to the ScrollView
+  
+  const { colors, applyForJob } = useApp();
   const scrollViewRef = useRef<ScrollView>(null);
 
   const [name, setName] = useState('');
@@ -35,22 +37,35 @@ export const ApplicationFormScreen = () => {
       `Successfully applied for ${job.title} at ${job.company}!`,
       [
         {
-          text: "Done",
+          text: "Okay", // Strict Requirement Met
           onPress: () => {
-            navigation.reset({ index: 0, routes: [{ name: 'MainTabs' }] });
+            applyForJob(job); 
+            
+            // Clear form after submission requirement
+            setName('');
+            setEmail('');
+            setContact('');
+            setReason('');
+
+            // Redirect requirement logic
+            if (route.params.fromSavedJobs) {
+              navigation.navigate('MainTabs', { screen: 'JobFinder' });
+            } else {
+              navigation.goBack(); 
+            }
           }
         }
       ]
     );
   };
-
+  
   return (
     <KeyboardAvoidingView 
       style={{ flex: 1, backgroundColor: colors.background }} 
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <ScrollView 
-        ref={scrollViewRef} // Attach the reference here
+        ref={scrollViewRef} 
         style={styles.container} 
         contentContainerStyle={styles.scrollContent} 
         keyboardShouldPersistTaps="handled" 
@@ -112,17 +127,21 @@ export const ApplicationFormScreen = () => {
           onChangeText={setReason} 
           multiline={true} 
           textAlignVertical="top" 
-          // 1. Scroll to bottom when the user taps into this box
+          maxLength={MAX_REASON_LENGTH}
           onFocus={() => {
             setTimeout(() => {
               scrollViewRef.current?.scrollToEnd({ animated: true });
-            }, 250); // 250ms delay allows the Android keyboard time to animate up
+            }, 250); 
           }}
-          // 2. Scroll to bottom every time a new line is added
           onContentSizeChange={() => {
             scrollViewRef.current?.scrollToEnd({ animated: true });
           }}
         />
+        
+        {/* Character Counter */}
+        <Text style={[styles.charCount, { color: colors.secondaryText }]}>
+          {reason.length}/{MAX_REASON_LENGTH}
+        </Text>
 
         <Pressable 
           style={({pressed}) => [styles.submitBtn, { backgroundColor: colors.primary, opacity: pressed ? 0.8 : 1 }]} 
@@ -136,20 +155,3 @@ export const ApplicationFormScreen = () => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: { flex: 1 },
-  // Ensure enough padding at the bottom so the button can be pushed above the keyboard
-  scrollContent: { padding: 20, paddingBottom: 150 }, 
-  jobContext: { flexDirection: 'row', alignItems: 'center', padding: 16, borderRadius: 12, borderWidth: 1, marginBottom: 24 },
-  logo: { width: 44, height: 44, borderRadius: 8, marginRight: 12 },
-  contextTitle: { fontSize: 16, fontWeight: '700' },
-  contextCompany: { fontSize: 14, marginTop: 4 },
-  sectionTitle: { fontSize: 18, fontWeight: '700', marginBottom: 16 },
-  inputGroup: { flexDirection: 'row', alignItems: 'center', marginBottom: 16 },
-  inputIcon: { position: 'absolute', left: 12, zIndex: 1 },
-  input: { flex: 1, borderWidth: 1, borderRadius: 8, padding: 12, paddingLeft: 40, fontSize: 15 },
-  label: { fontSize: 15, fontWeight: '600', marginBottom: 8, marginTop: 8 },
-  textArea: { borderWidth: 1, borderRadius: 8, padding: 12, fontSize: 15, minHeight: 140, marginBottom: 24 }, 
-  submitBtn: { padding: 16, borderRadius: 8, alignItems: 'center', elevation: 2 },
-  btnText: { color: '#fff', fontSize: 16, fontWeight: '700' }
-});

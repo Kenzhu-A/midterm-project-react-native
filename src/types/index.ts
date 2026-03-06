@@ -9,8 +9,8 @@ export interface Job {
 }
 
 export type RootStackParamList = {
-  MainTabs: undefined;
-  ApplicationForm: { job: Job };
+  MainTabs: { screen?: keyof TabParamList };
+  ApplicationForm: { job: Job; fromSavedJobs?: boolean }; // Added fromSavedJobs
 };
 
 export type TabParamList = {

@@ -5,7 +5,10 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 interface AppContextType {
   savedJobs: Job[];
   toggleSaveJob: (job: Job) => void;
-  isSaved: (jobId: string) => boolean;
+  isSaved: (job: Job) => boolean; 
+  appliedJobs: string[];
+  applyForJob: (job: Job) => void; 
+  hasApplied: (job: Job) => boolean; 
   theme: 'light' | 'dark';
   toggleTheme: () => void;
   colors: any;
@@ -15,20 +18,27 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [savedJobs, setSavedJobs] = useState<Job[]>([]);
+  const [appliedJobs, setAppliedJobs] = useState<string[]>([]);
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
 
   useEffect(() => {
     AsyncStorage.getItem('savedJobs').then(data => {
       if (data) setSavedJobs(JSON.parse(data));
     });
+    AsyncStorage.getItem('appliedJobs').then(data => {
+      if (data) setAppliedJobs(JSON.parse(data));
+    });
   }, []);
+
+  // Creates a stable key to prevent duplicates if mock API changes IDs
+  const getStableKey = (job: Job) => `${job.title}-${job.company}`;
 
   const toggleSaveJob = (job: Job) => {
     setSavedJobs(prev => {
-      const exists = prev.find(j => j.id === job.id);
+      const exists = prev.find(j => getStableKey(j) === getStableKey(job));
       let newList;
       if (exists) {
-        newList = prev.filter(j => j.id !== job.id); 
+        newList = prev.filter(j => getStableKey(j) !== getStableKey(job)); 
       } else {
         newList = [...prev, job]; 
       }
@@ -37,10 +47,22 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     });
   };
 
-  const isSaved = (id: string) => !!savedJobs.find(j => j.id === id);
+  const isSaved = (job: Job) => !!savedJobs.find(j => getStableKey(j) === getStableKey(job));
+
+  const applyForJob = (job: Job) => {
+    setAppliedJobs(prev => {
+      const key = getStableKey(job);
+      if (prev.includes(key)) return prev;
+      const newList = [...prev, key];
+      AsyncStorage.setItem('appliedJobs', JSON.stringify(newList));
+      return newList;
+    });
+  };
+
+  const hasApplied = (job: Job) => appliedJobs.includes(getStableKey(job));
+
   const toggleTheme = () => setTheme(prev => (prev === 'light' ? 'dark' : 'light'));
 
-  // Corporate UI Palette
   const colors = theme === 'light' 
     ? { 
         background: '#F4F5F7', card: '#FFFFFF', text: '#172B4D', 
@@ -52,7 +74,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       };
 
   return (
-    <AppContext.Provider value={{ savedJobs, toggleSaveJob, isSaved, theme, toggleTheme, colors }}>
+    <AppContext.Provider value={{ savedJobs, toggleSaveJob, isSaved, appliedJobs, applyForJob, hasApplied, theme, toggleTheme, colors }}>
       {children}
     </AppContext.Provider>
   );

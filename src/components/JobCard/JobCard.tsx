@@ -1,22 +1,26 @@
 import React, { useState } from 'react';
-import { View, Text, Pressable, StyleSheet, Image, Modal } from 'react-native';
-import { Job } from '../types';
-import { useApp } from '../context/AppContext';
+import { View, Text, Pressable, Image, Modal } from 'react-native';
+import { Job } from '../../types';
+import { useApp } from '../../context/AppContext';
+import { styles } from '../JobCard/JobCard.styles'; // Assuming you have a separate styles file for JobCard
 
 interface JobCardProps {
   job: Job;
   onApply: () => void;
+  isSavedScreen?: boolean; // New prop to handle specific "Remove Job" text
 }
 
-export const JobCard: React.FC<JobCardProps> = ({ job, onApply }) => {
-  const { toggleSaveJob, isSaved, colors } = useApp();
-  const saved = isSaved(job.id);
+export const JobCard: React.FC<JobCardProps> = ({ job, onApply, isSavedScreen }) => {
+  const { toggleSaveJob, isSaved, hasApplied, colors } = useApp();
   
-  // Modal State
+  const saved = isSaved(job);
+  const applied = hasApplied(job);
+  
   const [modalVisible, setModalVisible] = useState(false);
   const [actionType, setActionType] = useState<'save' | 'apply' | null>(null);
 
   const handleActionClick = (type: 'save' | 'apply') => {
+    if (type === 'apply' && applied) return; 
     setActionType(type);
     setModalVisible(true);
   };
@@ -27,10 +31,19 @@ export const JobCard: React.FC<JobCardProps> = ({ job, onApply }) => {
     if (actionType === 'apply') onApply();
   };
 
+  const formatSalary = (salary: string) => {
+    return salary.replace(/([a-zA-Z]+)(\d)/g, '$1 $2');
+  };
+
+  // Determine button text and styling based on screen
+  const getSaveButtonText = () => {
+    if (isSavedScreen) return "Remove Job";
+    return saved ? "Saved" : "Save Job";
+  };
+
   return (
     <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
       
-      {/* Top Row: Logo & Info */}
       <View style={styles.headerRow}>
         <Image source={{ uri: job.companyLogo }} style={styles.logo} resizeMode="cover" />
         <View style={styles.infoContainer}>
@@ -40,34 +53,42 @@ export const JobCard: React.FC<JobCardProps> = ({ job, onApply }) => {
         </View>
       </View>
 
-      <Text style={[styles.salary, { color: colors.primary }]}>{job.salary}</Text>
+      <Text style={[styles.salary, { color: colors.primary }]}>{formatSalary(job.salary)}</Text>
 
-      {/* Action Buttons */}
       <View style={styles.actionRow}>
         <Pressable 
           style={({ pressed }) => [
             styles.button, styles.outlineButton,
-            { borderColor: colors.primary, backgroundColor: saved ? colors.primary : 'transparent', opacity: pressed ? 0.6 : 1 }
+            { 
+              borderColor: isSavedScreen ? colors.error : colors.primary, 
+              backgroundColor: saved && !isSavedScreen ? colors.primary : 'transparent', 
+              opacity: pressed ? 0.6 : 1 
+            }
           ]}
           onPress={() => handleActionClick('save')}
         >
-          <Text style={[styles.btnText, { color: saved ? '#fff' : colors.primary }]}>
-            {saved ? "Saved" : "Save Job"}
+          <Text style={[styles.btnText, { color: isSavedScreen ? colors.error : (saved ? '#fff' : colors.primary) }]}>
+            {getSaveButtonText()}
           </Text>
         </Pressable>
 
         <Pressable 
           style={({ pressed }) => [
             styles.button, 
-            { backgroundColor: colors.primary, opacity: pressed ? 0.8 : 1 }
+            { 
+              backgroundColor: applied ? colors.secondaryText : colors.primary, 
+              opacity: pressed && !applied ? 0.8 : 1 
+            }
           ]}
           onPress={() => handleActionClick('apply')}
+          disabled={applied}
         >
-          <Text style={[styles.btnText, { color: '#fff' }]}>Apply</Text>
+          <Text style={[styles.btnText, { color: '#fff' }]}>
+            {applied ? "Applied" : "Apply"}
+          </Text>
         </Pressable>
       </View>
 
-      {/* Confirmation Modal */}
       <Modal transparent visible={modalVisible} animationType="fade" onRequestClose={() => setModalVisible(false)}>
         <View style={styles.modalOverlay}>
           <View style={[styles.modalContent, { backgroundColor: colors.card, borderColor: colors.border }]}>
@@ -75,7 +96,7 @@ export const JobCard: React.FC<JobCardProps> = ({ job, onApply }) => {
             <Text style={[styles.modalText, { color: colors.secondaryText }]}>
               {actionType === 'apply' 
                 ? `Are you sure you want to apply for the ${job.title} position at ${job.company}?`
-                : saved 
+                : isSavedScreen || saved 
                   ? "Are you sure you want to remove this job from your saved list?" 
                   : "Are you sure you want to save this job?"}
             </Text>
@@ -94,25 +115,3 @@ export const JobCard: React.FC<JobCardProps> = ({ job, onApply }) => {
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  card: { padding: 16, borderRadius: 12, marginBottom: 16, borderWidth: 1, elevation: 3, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 4 },
-  headerRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
-  logo: { width: 50, height: 50, borderRadius: 8, marginRight: 12, backgroundColor: '#eee' },
-  infoContainer: { flex: 1 },
-  title: { fontSize: 16, fontWeight: '700', marginBottom: 2 },
-  company: { fontSize: 14, fontWeight: '500' },
-  location: { fontSize: 12, marginTop: 2 },
-  salary: { fontSize: 15, fontWeight: '700', marginBottom: 16 },
-  actionRow: { flexDirection: 'row', justifyContent: 'space-between' },
-  button: { flex: 1, paddingVertical: 10, borderRadius: 8, alignItems: 'center', justifyContent: 'center' },
-  outlineButton: { borderWidth: 1, marginRight: 10 },
-  btnText: { fontWeight: '700', fontSize: 14 },
-  
-  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center', padding: 20 },
-  modalContent: { width: '100%', padding: 24, borderRadius: 12, borderWidth: 1 },
-  modalTitle: { fontSize: 18, fontWeight: 'bold', marginBottom: 10 },
-  modalText: { fontSize: 15, marginBottom: 24, lineHeight: 22 },
-  modalActions: { flexDirection: 'row', justifyContent: 'flex-end', gap: 12 },
-  modalBtn: { paddingVertical: 10, paddingHorizontal: 20, borderRadius: 8 }
-});

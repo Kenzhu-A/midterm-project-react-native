@@ -1,25 +1,31 @@
 import React from 'react';
+import { Pressable } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { JobFinderScreen } from '../screens/JobFinderScreen';
-import { SavedJobsScreen } from '../screens/SavedJobsScreen';
-import { ApplicationFormScreen } from '../screens/ApplicationFormScreen';
+import { JobFinderScreen } from '../screens/JobFinderScreen/JobFinderScreen';
+import { SavedJobsScreen } from '../screens/SavedJobsScreen/SavedJobsScreen';
+import { ApplicationFormScreen } from '../screens/ApplicationFormScreen/ApplicationFormScreen';
 import { RootStackParamList, TabParamList } from '../types';
 import { useApp } from '../context/AppContext';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 
 const Tab = createBottomTabNavigator<TabParamList>();
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 function TabNavigator() {
-  const { colors } = useApp();
+  const { colors, theme, toggleTheme } = useApp();
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
         headerStyle: { backgroundColor: colors.card, borderBottomWidth: 1, borderBottomColor: colors.border, shadowOpacity: 0 },
         headerTintColor: colors.text,
         headerTitleStyle: { fontWeight: '700' },
+        headerRight: () => (
+          <Pressable onPress={toggleTheme} style={{ marginRight: 16, padding: 4 }}>
+            <MaterialIcons name={theme === 'light' ? 'dark-mode' : 'light-mode'} size={24} color={colors.text} />
+          </Pressable>
+        ),
         tabBarStyle: { backgroundColor: colors.card, borderTopWidth: 1, borderTopColor: colors.border },
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.secondaryText,
