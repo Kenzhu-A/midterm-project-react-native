@@ -45,7 +45,7 @@ export const JobCard: React.FC<JobCardProps> = ({ job, onApply, isSavedScreen })
     <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
       
       <View style={styles.headerRow}>
-        <Image source={{ uri: job.companyLogo }} style={styles.logo} resizeMode="cover" />
+        <Image source={{ uri: job.companyLogo }} style={styles.logo} resizeMode="contain" />
         <View style={styles.infoContainer}>
           <Text style={[styles.title, { color: colors.text }]} numberOfLines={1}>{job.title}</Text>
           <Text style={[styles.company, { color: colors.secondaryText }]} numberOfLines={1}>{job.company}</Text>
