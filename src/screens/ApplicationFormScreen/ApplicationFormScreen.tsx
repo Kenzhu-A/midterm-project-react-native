@@ -12,7 +12,7 @@ import {
   Platform,
 } from "react-native";
 import { RouteProp, useRoute, useNavigation } from "@react-navigation/native";
-import { RootStackParamList } from "../../types";
+import { RootStackParamList } from "../../types/types";
 import { useApp } from "../../context/AppContext";
 import { MaterialIcons } from "@expo/vector-icons";
 import { styles } from "./ApplicationFormScreen.styles";

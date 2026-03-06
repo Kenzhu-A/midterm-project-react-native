@@ -4,7 +4,7 @@ import { JobCard } from '../../components/JobCard/JobCard';
 import { useApp } from '../../context/AppContext';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { RootStackParamList } from '../../types';
+import { RootStackParamList } from '../../types/types';
 import { styles } from './SavedJobsScreen.styles';
 
 export const SavedJobsScreen = () => {

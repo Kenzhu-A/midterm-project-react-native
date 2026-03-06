@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { Job } from '../types';
+import { Job } from '../types/types';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface AppContextType {

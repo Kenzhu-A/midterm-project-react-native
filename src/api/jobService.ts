@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { v4 as uuidv4 } from 'uuid'; // Professor's requirement
-import { Job } from '../types';
+import { Job } from '../types/types';
 
 const API_URL = 'https://empllo.com/api/v1';
 

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, Pressable, Image, Modal } from 'react-native';
-import { Job } from '../../types';
+import { Job } from '../../types/types';
 import { useApp } from '../../context/AppContext';
 import { styles } from '../JobCard/JobCard.styles'; // Assuming you have a separate styles file for JobCard
 

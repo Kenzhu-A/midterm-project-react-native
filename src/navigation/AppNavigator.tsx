@@ -6,7 +6,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { JobFinderScreen } from '../screens/JobFinderScreen/JobFinderScreen';
 import { SavedJobsScreen } from '../screens/SavedJobsScreen/SavedJobsScreen';
 import { ApplicationFormScreen } from '../screens/ApplicationFormScreen/ApplicationFormScreen';
-import { RootStackParamList, TabParamList } from '../types';
+import { RootStackParamList, TabParamList } from '../types/types';
 import { useApp } from '../context/AppContext';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 

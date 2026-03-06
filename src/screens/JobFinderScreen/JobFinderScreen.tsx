@@ -3,10 +3,10 @@ import { View, FlatList, TextInput, ActivityIndicator, StyleSheet, BackHandler }
 import { fetchJobs } from '../../api/jobService';
 import { JobCard } from '../../components/JobCard/JobCard';
 import { useApp } from '../../context/AppContext';
-import { Job } from '../../types';
+import { Job } from '../../types/types';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { RootStackParamList } from '../../types';
+import { RootStackParamList } from '../../types/types';
 import { MaterialIcons } from '@expo/vector-icons';
 import { styles } from './JobFinderScreen.styles';
 
